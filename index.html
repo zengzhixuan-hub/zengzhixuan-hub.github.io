@@ -196,7 +196,6 @@
             border: 1px solid #f0f2f8;
             transition: all 0.25s;
             animation: fadeInUp 0.4s ease;
-            cursor: pointer;
             position: relative;
         }
 
@@ -216,6 +215,7 @@
             text-decoration: none;
             color: #1a1a2e;
             transition: color 0.2s;
+            display: block;
         }
 
         .post-item h3 a:hover {
@@ -266,6 +266,7 @@
             transition: color 0.2s;
             line-height: 1;
             padding: 0 4px;
+            z-index: 10;
         }
 
         .delete-btn:hover {
@@ -535,63 +536,49 @@
             transform: translateY(-2px);
         }
 
-        /* ---------- 文章详情弹窗 ---------- */
-        .detail-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .detail-overlay.active {
-            display: flex;
-        }
-
-        .detail-modal {
+        /* ---------- 文章详情页（独立页面样式，用于新窗口） ---------- */
+        .detail-page {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px 48px;
             background: #fff;
             border-radius: 32px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            padding: 40px 48px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease;
-            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
         }
 
-        .detail-modal .modal-header {
-            margin-bottom: 16px;
+        .detail-page .back-link {
+            display: inline-block;
+            margin-bottom: 24px;
+            color: #4a6cf7;
+            text-decoration: none;
+            font-weight: 500;
         }
 
-        .detail-modal .modal-header h2 {
-            font-size: 28px;
+        .detail-page .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .detail-page h1 {
+            font-size: 32px;
             color: #1a1a2e;
+            margin-bottom: 8px;
         }
 
-        .detail-meta {
+        .detail-page .detail-meta {
             color: #999;
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             padding-bottom: 16px;
             border-bottom: 1px solid #f0f2f5;
         }
 
-        .detail-content {
+        .detail-page .detail-content {
             font-size: 16px;
             line-height: 1.8;
             color: #333;
         }
 
-        /* Markdown 样式 */
+        /* Markdown 样式 (详情页) */
         .detail-content h1,
         .detail-content h2,
         .detail-content h3 {
@@ -724,8 +711,9 @@
             .modal {
                 padding: 24px 20px;
             }
-            .detail-modal {
+            .detail-page {
                 padding: 24px 20px;
+                margin: 20px 16px;
             }
         }
 
@@ -766,8 +754,13 @@
             .modal {
                 padding: 20px 16px;
             }
-            .detail-modal {
+            .detail-page {
                 padding: 20px 16px;
+                margin: 12px 8px;
+                border-radius: 24px;
+            }
+            .detail-page h1 {
+                font-size: 24px;
             }
             .form-actions {
                 flex-direction: column;
@@ -811,7 +804,7 @@
                 </div>
 
                 <div class="posts-list" id="postsList">
-                    <!-- 默认有一篇示例文章 -->
+                    <!-- 由 JavaScript 渲染 -->
                 </div>
             </section>
 
@@ -880,34 +873,32 @@
         </div>
     </div>
 
-    <!-- ========== 文章详情模态框 ========== -->
-    <div class="detail-overlay" id="detailModal">
-        <div class="detail-modal">
-            <div class="modal-header">
-                <h2 id="detailTitle">文章标题</h2>
-                <button class="modal-close" onclick="closeDetail()">&times;</button>
-            </div>
-            <div class="detail-meta" id="detailMeta">
-                <span id="detailDate">📅 2026-06-24</span>
-                <span id="detailTag" style="margin-left: 16px;">🏷️ 技术</span>
-            </div>
-            <div class="detail-content" id="detailContent"></div>
-        </div>
-    </div>
-
     <!-- ========== JavaScript ========== -->
     <script>
         // ===== 文章数据存储 =====
         let articles = [];
         let articleIdCounter = 0;
 
-        // ===== 初始化默认文章 =====
-        const defaultArticle = {
-            id: articleIdCounter++,
-            title: '欢迎来到我的博客！',
-            tag: '随笔',
-            date: '2026-06-24',
-            content: `## 你好，世界！ 👋
+        // ===== 从 localStorage 加载数据 =====
+        function loadArticles() {
+            const saved = localStorage.getItem('blog_articles');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.length > 0) {
+                        articles = parsed;
+                        articleIdCounter = Math.max(...articles.map(a => a.id)) + 1;
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // 默认文章
+            const defaultArticle = {
+                id: articleIdCounter++,
+                title: '欢迎来到我的博客！',
+                tag: '随笔',
+                date: '2026-06-24',
+                content: `## 你好，世界！ 👋
 
         欢迎来到 **zengzhixuan's blog**！
 
@@ -945,9 +936,188 @@
         $$
 
         尽情享受写作的乐趣吧！ 🚀`
-        };
+            };
+            articles.push(defaultArticle);
+            saveArticles();
+        }
 
-        articles.push(defaultArticle);
+        // ===== 保存到 localStorage =====
+        function saveArticles() {
+            localStorage.setItem('blog_articles', JSON.stringify(articles));
+        }
+
+        // ===== 渲染 Markdown + LaTeX =====
+        function renderMarkdown(content) {
+            let html = marked.parse(content);
+            // 处理块级公式 $$ ... $$
+            html = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+                try {
+                    return katex.renderToString(latex, { displayMode: true, throwOnError: false });
+                } catch (e) {
+                    return match;
+                }
+            });
+            // 处理行内公式 $ ... $
+            html = html.replace(/\$([^\$]+?)\$/g, (match, latex) => {
+                try {
+                    return katex.renderToString(latex, { displayMode: false, throwOnError: false });
+                } catch (e) {
+                    return match;
+                }
+            });
+            return html;
+        }
+
+        // ===== 生成文章详情页的完整 HTML =====
+        function generateDetailPage(article) {
+            const contentHtml = renderMarkdown(article.content);
+            return `<!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${escapeHtml(article.title)}</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                    background: #f0f2f5;
+                    color: #333;
+                    line-height: 1.8;
+                    margin: 0;
+                    padding: 20px;
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-start;
+                }
+                .detail-page {
+                    max-width: 900px;
+                    width: 100%;
+                    margin: 20px auto;
+                    padding: 40px 48px;
+                    background: #fff;
+                    border-radius: 32px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+                }
+                .back-link {
+                    display: inline-block;
+                    margin-bottom: 24px;
+                    color: #4a6cf7;
+                    text-decoration: none;
+                    font-weight: 500;
+                }
+                .back-link:hover {
+                    text-decoration: underline;
+                }
+                .detail-page h1 {
+                    font-size: 32px;
+                    color: #1a1a2e;
+                    margin-bottom: 8px;
+                }
+                .detail-meta {
+                    color: #999;
+                    font-size: 14px;
+                    margin-bottom: 24px;
+                    padding-bottom: 16px;
+                    border-bottom: 1px solid #f0f2f5;
+                }
+                .detail-content {
+                    font-size: 16px;
+                    line-height: 1.8;
+                    color: #333;
+                }
+                .detail-content h1, .detail-content h2, .detail-content h3 {
+                    margin-top: 24px;
+                    margin-bottom: 12px;
+                    color: #1a1a2e;
+                }
+                .detail-content h1 { font-size: 28px; }
+                .detail-content h2 { font-size: 24px; }
+                .detail-content h3 { font-size: 20px; }
+                .detail-content p { margin-bottom: 12px; }
+                .detail-content ul, .detail-content ol {
+                    margin-left: 24px;
+                    margin-bottom: 12px;
+                }
+                .detail-content blockquote {
+                    border-left: 4px solid #4a6cf7;
+                    padding-left: 16px;
+                    margin-left: 0;
+                    color: #666;
+                    background: #f8faff;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                }
+                .detail-content code {
+                    background: #f0f2f5;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    font-family: 'Courier New', monospace;
+                }
+                .detail-content pre {
+                    background: #1a1a2e;
+                    color: #e8e8e8;
+                    padding: 16px 20px;
+                    border-radius: 12px;
+                    overflow-x: auto;
+                    margin-bottom: 12px;
+                }
+                .detail-content pre code {
+                    background: none;
+                    padding: 0;
+                    color: inherit;
+                }
+                .detail-content img {
+                    max-width: 100%;
+                    border-radius: 12px;
+                    margin: 12px 0;
+                }
+                .detail-content table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 12px;
+                }
+                .detail-content table th, .detail-content table td {
+                    border: 1px solid #e8ecf3;
+                    padding: 8px 12px;
+                    text-align: left;
+                }
+                .detail-content table th { background: #f8faff; }
+                @media (max-width: 600px) {
+                    .detail-page { padding: 20px 16px; margin: 10px 8px; border-radius: 24px; }
+                    .detail-page h1 { font-size: 24px; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="detail-page">
+                <a class="back-link" href="javascript:history.back()">← 返回博客</a>
+                <h1>${escapeHtml(article.title)}</h1>
+                <div class="detail-meta">
+                    📅 ${article.date}
+                    ${article.tag ? `&nbsp;&nbsp;🏷️ ${escapeHtml(article.tag)}` : ''}
+                </div>
+                <div class="detail-content">${contentHtml}</div>
+            </div>
+        </body>
+        </html>`;
+        }
+
+        // ===== 转义 HTML =====
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 获取摘要 =====
+        function getExcerpt(content) {
+            const plain = content.replace(/[#*`$\\]/g, '').replace(/\n/g, ' ').trim();
+            return plain.length > 120 ? plain.slice(0, 120) + '……' : plain;
+        }
 
         // ===== 渲染文章列表 =====
         function renderPosts() {
@@ -961,33 +1131,23 @@
                     </div>
                 `;
             } else {
-                list.innerHTML = articles.map(article => `
-                    <article class="post-item" data-id="${article.id}" onclick="openDetail(${article.id})">
-                        <button class="delete-btn" onclick="event.stopPropagation(); deleteArticle(${article.id})" title="删除文章">✕</button>
-                        <h3><a>${escapeHtml(article.title)}</a></h3>
-                        <div class="post-meta">
-                            <span>📅 ${article.date}</span>
-                            <span>🏷️ ${escapeHtml(article.tag || '未分类')}</span>
-                        </div>
-                        <p class="post-excerpt">${getExcerpt(article.content)}</p>
-                        <span class="read-more">阅读全文 →</span>
-                    </article>
-                `).join('');
+                list.innerHTML = articles.map(article => {
+                    const detailUrl = `data:text/html;charset=utf-8,${encodeURIComponent(generateDetailPage(article))}`;
+                    return `
+                        <article class="post-item">
+                            <button class="delete-btn" onclick="deleteArticle(${article.id})" title="删除文章">✕</button>
+                            <h3><a href="${detailUrl}" target="_blank">${escapeHtml(article.title)}</a></h3>
+                            <div class="post-meta">
+                                <span>📅 ${article.date}</span>
+                                <span>🏷️ ${escapeHtml(article.tag || '未分类')}</span>
+                            </div>
+                            <p class="post-excerpt">${getExcerpt(article.content)}</p>
+                            <a href="${detailUrl}" target="_blank" class="read-more">阅读全文 →</a>
+                        </article>
+                    `;
+                }).join('');
             }
             updateStats();
-        }
-
-        // ===== 获取摘要 =====
-        function getExcerpt(content) {
-            const plain = content.replace(/[#*`$\\]/g, '').replace(/\n/g, ' ').trim();
-            return plain.length > 120 ? plain.slice(0, 120) + '……' : plain;
-        }
-
-        // ===== 转义 HTML =====
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         // ===== 更新统计 =====
@@ -995,12 +1155,10 @@
             const count = articles.length;
             document.getElementById('postCount').textContent = `📄 文章总数：${count} 篇`;
 
-            // 统计标签
             const tagSet = new Set();
             articles.forEach(a => { if (a.tag) tagSet.add(a.tag); });
             document.getElementById('tagCount').textContent = `🏷️ 标签：${tagSet.size} 个`;
 
-            // 更新标签云
             const cloud = document.getElementById('tagCloud');
             if (tagSet.size === 0) {
                 cloud.innerHTML = '<span style="color: #999; font-size: 13px;">暂无标签</span>';
@@ -1018,8 +1176,6 @@
             document.getElementById('articleTag').value = '';
             document.getElementById('articleContent').value = '';
             document.getElementById('articleTitle').focus();
-            document.getElementById('articleForm').onsubmit = submitArticle;
-            // 移除编辑模式标记
             document.getElementById('articleForm').dataset.editId = '';
         }
 
@@ -1042,7 +1198,6 @@
 
             const editId = document.getElementById('articleForm').dataset.editId;
             if (editId) {
-                // 编辑模式
                 const idx = articles.findIndex(a => a.id === parseInt(editId));
                 if (idx !== -1) {
                     articles[idx].title = title;
@@ -1050,7 +1205,6 @@
                     articles[idx].content = content;
                 }
             } else {
-                // 新增模式
                 const now = new Date();
                 const date = now.toISOString().split('T')[0];
                 articles.unshift({
@@ -1062,6 +1216,7 @@
                 });
             }
 
+            saveArticles();
             closeEditor();
             renderPosts();
         }
@@ -1070,55 +1225,12 @@
         function deleteArticle(id) {
             if (!confirm('确定要删除这篇文章吗？')) return;
             articles = articles.filter(a => a.id !== id);
+            saveArticles();
             renderPosts();
         }
 
-        // ===== 打开文章详情 =====
-        function openDetail(id) {
-            const article = articles.find(a => a.id === id);
-            if (!article) return;
-
-            document.getElementById('detailTitle').textContent = article.title;
-            document.getElementById('detailDate').textContent = `📅 ${article.date}`;
-            document.getElementById('detailTag').textContent = `🏷️ ${article.tag || '未分类'}`;
-
-            const content = document.getElementById('detailContent');
-            // 使用 marked 渲染 Markdown
-            let html = marked.parse(article.content);
-
-            // 渲染 LaTeX
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            // 处理块级公式 $$ ... $$
-            tempDiv.innerHTML = tempDiv.innerHTML.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
-                try {
-                    return katex.renderToString(latex, { displayMode: true, throwOnError: false });
-                } catch (e) {
-                    return match;
-                }
-            });
-            // 处理行内公式 $ ... $
-            tempDiv.innerHTML = tempDiv.innerHTML.replace(/\$([^\$]+?)\$/g, (match, latex) => {
-                try {
-                    return katex.renderToString(latex, { displayMode: false, throwOnError: false });
-                } catch (e) {
-                    return match;
-                }
-            });
-
-            content.innerHTML = tempDiv.innerHTML;
-
-            document.getElementById('detailModal').classList.add('active');
-        }
-
-        // ===== 关闭文章详情 =====
-        function closeDetail() {
-            document.getElementById('detailModal').classList.remove('active');
-        }
-
-        // ===== 显示列表（导航用） =====
+        // ===== 显示列表 =====
         function showList() {
-            // 滚动到列表位置
             document.querySelector('.posts').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1126,15 +1238,11 @@
         document.getElementById('editorModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditor();
         });
-        document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDetail();
-        });
 
         // ===== 键盘快捷键 =====
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeEditor();
-                closeDetail();
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
@@ -1143,6 +1251,7 @@
         });
 
         // ===== 初始化 =====
+        loadArticles();
         renderPosts();
         console.log('📝 博客已加载！按 Ctrl+K 快速写文章。');
     </script>
