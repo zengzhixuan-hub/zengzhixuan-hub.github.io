@@ -1,9 +1,365 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人博客</title>
+    <!-- 使用简单的内联样式，方便你直接复制使用 -->
+    <style>
+        /* 全局重置和基础设置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* 整个页面的容器 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            padding: 30px 40px;
+        }
+
+        /* ---------- 顶部导航 ---------- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeef3;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo a:hover {
+            color: #3498db;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #3498db;
+        }
+
+        /* ---------- 博客头部 ---------- */
+        .blog-header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        .blog-header h1 {
+            font-size: 36px;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        .blog-header p {
+            color: #7f8c9b;
+            font-size: 18px;
+        }
+
+        /* ---------- 主体：两栏布局 ---------- */
+        .main-content {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .posts {
+            flex: 2; /* 文章列表占2份 */
+            min-width: 280px;
+        }
+
+        .sidebar {
+            flex: 1; /* 侧边栏占1份 */
+            min-width: 220px;
+        }
+
+        /* ---------- 文章列表 ---------- */
+        .post-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-item h2 {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .post-item h2 a {
+            text-decoration: none;
+            color: #1f2a36;
+            transition: color 0.2s;
+        }
+
+        .post-item h2 a:hover {
+            color: #3498db;
+        }
+
+        .post-meta {
+            font-size: 14px;
+            color: #95a5a6;
+            margin-bottom: 10px;
+        }
+
+        .post-meta span {
+            margin-right: 15px;
+        }
+
+        .post-excerpt {
+            color: #4a5568;
+            font-size: 15px;
+        }
+
+        .read-more {
+            display: inline-block;
+            margin-top: 8px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* ---------- 侧边栏 ---------- */
+        .sidebar-widget {
+            background: #f8faff;
+            border-radius: 10px;
+            padding: 20px 22px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-widget h3 {
+            font-size: 18px;
+            color: #1f2a36;
+            margin-bottom: 14px;
+            border-left: 4px solid #3498db;
+            padding-left: 12px;
+        }
+
+        .sidebar-widget ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .sidebar-widget ul li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-widget ul li a {
+            text-decoration: none;
+            color: #3d5166;
+            transition: color 0.2s;
+        }
+
+        .sidebar-widget ul li a:hover {
+            color: #3498db;
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-cloud a {
+            background: #e9edf4;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #3d5166;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .tag-cloud a:hover {
+            background: #3498db;
+            color: #fff;
+        }
+
+        /* ---------- 页脚 ---------- */
+        .footer {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #eaeef3;
+            text-align: center;
+            color: #7f8c9b;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        /* 响应式优化：小屏幕下导航折叠 */
+        @media (max-width: 700px) {
+            .container {
+                padding: 20px;
+            }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .nav-links {
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+            .blog-header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2>This is my blog.</h2>
+    <div class="container">
+
+        <!-- ========== 顶部导航 ========== -->
+        <nav class="navbar">
+            <div class="logo">
+                <a href="#">MyBlog</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">首页</a></li>
+                <li><a href="#">归档</a></li>
+                <li><a href="#">关于</a></li>
+            </ul>
+        </nav>
+
+        <!-- ========== 博客头部 ========== -->
+        <header class="blog-header">
+            <h1>📝 我的博客</h1>
+            <p>记录技术、生活与思考</p>
+        </header>
+
+        <!-- ========== 主体内容 ========== -->
+        <div class="main-content">
+
+            <!-- 左侧：文章列表 -->
+            <section class="posts">
+
+                <article class="post-item">
+                    <h2><a href="#">GitHub Pages 搭建博客完整指南</a></h2>
+                    <div class="post-meta">
+                        <span>📅 2026-06-24</span>
+                        <span>🏷️ 技术</span>
+                    </div>
+                    <p class="post-excerpt">
+                        从零开始，教你如何利用 GitHub Pages 免费搭建属于自己的博客网站，包括域名绑定、主题选择等实用技巧……
+                    </p>
+                    <a href="#" class="read-more">阅读全文 →</a>
+                </article>
+
+                <article class="post-item">
+                    <h2><a href="#">2026 年流行的前端框架对比</a></h2>
+                    <div class="post-meta">
+                        <span>📅 2026-06-20</span>
+                        <span>🏷️ 前端</span>
+                    </div>
+                    <p class="post-excerpt">
+                        React、Vue 还是 Svelte？本文从性能、生态、学习曲线等角度，帮你理清思路，找到最适合你的框架……
+                    </p>
+                    <a href="#" class="read-more">阅读全文 →</a>
+                </article>
+
+                <article class="post-item">
+                    <h2><a href="#">如何保持高效学习与输出</a></h2>
+                    <div class="post-meta">
+                        <span>📅 2026-06-15</span>
+                        <span>🏷️ 成长</span>
+                    </div>
+                    <p class="post-excerpt">
+                        分享我多年积累的学习方法、笔记系统以及如何克服拖延，持续输出有价值的内容……
+                    </p>
+                    <a href="#" class="read-more">阅读全文 →</a>
+                </article>
+
+            </section>
+
+            <!-- 右侧：侧边栏 -->
+            <aside class="sidebar">
+
+                <!-- 关于我 -->
+                <div class="sidebar-widget">
+                    <h3>👤 关于我</h3>
+                    <p style="font-size: 14px; color: #4a5568;">
+                        一个热爱技术、写作与分享的开发者。目前专注于 Web 全栈和开源社区。
+                    </p>
+                </div>
+
+                <!-- 近期文章 -->
+                <div class="sidebar-widget">
+                    <h3>📖 近期文章</h3>
+                    <ul>
+                        <li><a href="#">GitHub Pages 搭建博客完整指南</a></li>
+                        <li><a href="#">2026 年流行的前端框架对比</a></li>
+                        <li><a href="#">如何保持高效学习与输出</a></li>
+                    </ul>
+                </div>
+
+                <!-- 标签云 -->
+                <div class="sidebar-widget">
+                    <h3>🏷️ 标签云</h3>
+                    <div class="tag-cloud">
+                        <a href="#">技术</a>
+                        <a href="#">前端</a>
+                        <a href="#">成长</a>
+                        <a href="#">生活</a>
+                        <a href="#">Python</a>
+                        <a href="#">Git</a>
+                        <a href="#">写作</a>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+        <!-- ========== 页脚 ========== -->
+        <footer class="footer">
+            <p>© 2026 MyBlog · 由 <a href="#">GitHub Pages</a> 驱动</p>
+        </footer>
+
+    </div>
 </body>
 </html>
