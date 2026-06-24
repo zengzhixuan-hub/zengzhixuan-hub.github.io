@@ -663,6 +663,23 @@
             background: #f8faff;
         }
 
+        /* ---------- 数据持久化提示 ---------- */
+        .save-indicator {
+            display: inline-block;
+            font-size: 12px;
+            color: #4a6cf7;
+            background: #eef1f8;
+            padding: 2px 12px;
+            border-radius: 20px;
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
         /* ---------- 动画 ---------- */
         @keyframes fadeInUp {
             from {
@@ -782,13 +799,16 @@
             <ul class="nav-links">
                 <li><a class="active" onclick="showList()">📖 文章</a></li>
                 <li><a onclick="openEditor()">✏️ 写文章</a></li>
+                <li>
+                    <span class="save-indicator" id="saveIndicator">💾 已保存</span>
+                </li>
             </ul>
         </nav>
 
         <!-- ========== 博客头部 ========== -->
         <header class="blog-header">
             <h1>📝 zengzhixuan's blog</h1>
-            <p>记录技术、生活与思考</p>
+            <p>记录技术、生活与思考 · 数据自动保存在浏览器中</p>
         </header>
 
         <!-- ========== 主体内容 ========== -->
@@ -822,6 +842,7 @@
                     <ul>
                         <li id="postCount">📄 文章总数：0 篇</li>
                         <li id="tagCount">🏷️ 标签：0 个</li>
+                        <li id="storageInfo">💾 数据已持久化</li>
                     </ul>
                 </div>
 
@@ -830,6 +851,17 @@
                     <div class="tag-cloud" id="tagCloud">
                         <span style="color: #999; font-size: 13px;">暂无标签</span>
                     </div>
+                </div>
+
+                <!-- 数据操作 -->
+                <div class="sidebar-widget" style="background: #fff5f5; border: 1px solid #fdd;">
+                    <h3 style="border-left-color: #e74c3c;">⚙️ 数据管理</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="exportData()" style="flex:1; padding:8px 12px; background:#4a6cf7; color:#fff; border:none; border-radius:12px; cursor:pointer; font-size:13px;">📤 导出数据</button>
+                        <button onclick="importData()" style="flex:1; padding:8px 12px; background:#2ecc71; color:#fff; border:none; border-radius:12px; cursor:pointer; font-size:13px;">📥 导入数据</button>
+                        <button onclick="clearAllData()" style="flex:1; padding:8px 12px; background:#e74c3c; color:#fff; border:none; border-radius:12px; cursor:pointer; font-size:13px;">🗑️ 清空数据</button>
+                    </div>
+                    <p style="font-size:11px; color:#999; margin-top:8px;">数据保存在浏览器本地，清除缓存会丢失</p>
                 </div>
             </aside>
 
@@ -846,7 +878,7 @@
     <div class="modal-overlay" id="editorModal">
         <div class="modal">
             <div class="modal-header">
-                <h2>✏️ 写新文章</h2>
+                <h2 id="editorTitle">✏️ 写新文章</h2>
                 <button class="modal-close" onclick="closeEditor()">&times;</button>
             </div>
             <form id="articleForm" onsubmit="submitArticle(event)">
@@ -867,37 +899,44 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeEditor()">取消</button>
-                    <button type="submit" class="btn-submit">发布文章</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">发布文章</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- ========== 隐藏的文件输入（用于导入） ========== -->
+    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)">
 
     <!-- ========== JavaScript ========== -->
     <script>
         // ===== 文章数据存储 =====
         let articles = [];
         let articleIdCounter = 0;
+        const STORAGE_KEY = 'blog_articles_data';
 
         // ===== 从 localStorage 加载数据 =====
         function loadArticles() {
-            const saved = localStorage.getItem('blog_articles');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    if (parsed.length > 0) {
+                    if (Array.isArray(parsed) && parsed.length > 0) {
                         articles = parsed;
-                        articleIdCounter = Math.max(...articles.map(a => a.id)) + 1;
+                        articleIdCounter = Math.max(...articles.map(a => a.id), 0) + 1;
+                        showSaveIndicator(true);
                         return;
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('数据解析失败，使用默认数据');
+                }
             }
-            // 默认文章
+            // 如果没有数据，创建默认文章
             const defaultArticle = {
                 id: articleIdCounter++,
                 title: '欢迎来到我的博客！',
                 tag: '随笔',
-                date: '2026-06-24',
+                date: getTodayDate(),
                 content: `## 你好，世界！ 👋
 
         欢迎来到 **zengzhixuan's blog**！
@@ -941,9 +980,27 @@
             saveArticles();
         }
 
+        // ===== 获取今天的日期 =====
+        function getTodayDate() {
+            const now = new Date();
+            return now.toISOString().split('T')[0];
+        }
+
         // ===== 保存到 localStorage =====
         function saveArticles() {
-            localStorage.setItem('blog_articles', JSON.stringify(articles));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+            showSaveIndicator(true);
+        }
+
+        // ===== 显示保存指示器 =====
+        function showSaveIndicator(show) {
+            const indicator = document.getElementById('saveIndicator');
+            if (show) {
+                indicator.classList.add('show');
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
         }
 
         // ===== 渲染 Markdown + LaTeX =====
@@ -1169,14 +1226,38 @@
             }
         }
 
-        // ===== 打开编辑器 =====
-        function openEditor() {
-            document.getElementById('editorModal').classList.add('active');
-            document.getElementById('articleTitle').value = '';
-            document.getElementById('articleTag').value = '';
-            document.getElementById('articleContent').value = '';
-            document.getElementById('articleTitle').focus();
-            document.getElementById('articleForm').dataset.editId = '';
+        // ===== 打开编辑器（支持编辑模式） =====
+        function openEditor(articleId) {
+            const modal = document.getElementById('editorModal');
+            const titleInput = document.getElementById('articleTitle');
+            const tagInput = document.getElementById('articleTag');
+            const contentInput = document.getElementById('articleContent');
+            const form = document.getElementById('articleForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const editorTitle = document.getElementById('editorTitle');
+
+            if (articleId !== undefined) {
+                // 编辑模式
+                const article = articles.find(a => a.id === articleId);
+                if (!article) return;
+                titleInput.value = article.title;
+                tagInput.value = article.tag || '';
+                contentInput.value = article.content;
+                form.dataset.editId = articleId;
+                editorTitle.textContent = '✏️ 编辑文章';
+                submitBtn.textContent = '更新文章';
+            } else {
+                // 新建模式
+                titleInput.value = '';
+                tagInput.value = '';
+                contentInput.value = '';
+                form.dataset.editId = '';
+                editorTitle.textContent = '✏️ 写新文章';
+                submitBtn.textContent = '发布文章';
+            }
+
+            modal.classList.add('active');
+            titleInput.focus();
         }
 
         // ===== 关闭编辑器 =====
@@ -1198,6 +1279,7 @@
 
             const editId = document.getElementById('articleForm').dataset.editId;
             if (editId) {
+                // 编辑模式
                 const idx = articles.findIndex(a => a.id === parseInt(editId));
                 if (idx !== -1) {
                     articles[idx].title = title;
@@ -1205,13 +1287,12 @@
                     articles[idx].content = content;
                 }
             } else {
-                const now = new Date();
-                const date = now.toISOString().split('T')[0];
+                // 新增模式
                 articles.unshift({
                     id: articleIdCounter++,
                     title: title,
                     tag: tag,
-                    date: date,
+                    date: getTodayDate(),
                     content: content
                 });
             }
@@ -1219,6 +1300,7 @@
             saveArticles();
             closeEditor();
             renderPosts();
+            showSaveIndicator(true);
         }
 
         // ===== 删除文章 =====
@@ -1227,6 +1309,69 @@
             articles = articles.filter(a => a.id !== id);
             saveArticles();
             renderPosts();
+            showSaveIndicator(true);
+        }
+
+        // ===== 导出数据 =====
+        function exportData() {
+            const data = JSON.stringify(articles, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `blog_backup_${getTodayDate()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== 导入数据 =====
+        function importData() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data) && data.length > 0) {
+                        if (confirm(`将导入 ${data.length} 篇文章，当前数据将被覆盖，确定继续吗？`)) {
+                            articles = data;
+                            articleIdCounter = Math.max(...articles.map(a => a.id), 0) + 1;
+                            saveArticles();
+                            renderPosts();
+                            showSaveIndicator(true);
+                            alert('✅ 数据导入成功！');
+                        }
+                    } else {
+                        alert('❌ 文件格式无效，请确保是有效的博客数据文件。');
+                    }
+                } catch (err) {
+                    alert('❌ 文件解析失败：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ===== 清空所有数据 =====
+        function clearAllData() {
+            if (articles.length === 0) {
+                alert('已经是空的了！');
+                return;
+            }
+            if (confirm(`⚠️ 确定要删除全部 ${articles.length} 篇文章吗？此操作不可撤销！`)) {
+                if (confirm('再次确认：真的要清空所有数据吗？')) {
+                    articles = [];
+                    articleIdCounter = 0;
+                    saveArticles();
+                    renderPosts();
+                    showSaveIndicator(true);
+                    alert('✅ 已清空所有数据');
+                }
+            }
         }
 
         // ===== 显示列表 =====
@@ -1254,6 +1399,7 @@
         loadArticles();
         renderPosts();
         console.log('📝 博客已加载！按 Ctrl+K 快速写文章。');
+        console.log(`📊 当前共有 ${articles.length} 篇文章`);
     </script>
 </body>
 </html>
