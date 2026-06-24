@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>zengzhixuan's blog</title>
+    <!-- 引入 marked.js 用于 Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 KaTeX 用于 LaTeX 渲染 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         /* 全局重置和基础设置 */
         * {
@@ -17,17 +22,24 @@
             background-color: #f0f2f5;
             color: #333;
             line-height: 1.6;
-            padding: 30px;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 整个页面的容器 - 超大圆角 */
         .container {
-            max-width: 1000px;
+            max-width: 1300px;
+            width: 100%;
+            min-height: 92vh;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 48px;  /* 更大的圆角 */
+            border-radius: 48px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
             padding: 40px 50px;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ---------- 顶部导航 ---------- */
@@ -38,6 +50,7 @@
             padding-bottom: 24px;
             border-bottom: 1px solid #f0f2f5;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .logo a {
@@ -56,6 +69,7 @@
             list-style: none;
             display: flex;
             gap: 32px;
+            align-items: center;
         }
 
         .nav-links a {
@@ -64,56 +78,212 @@
             font-weight: 500;
             font-size: 15px;
             transition: color 0.2s;
+            cursor: pointer;
         }
 
         .nav-links a:hover {
             color: #4a6cf7;
         }
 
+        .nav-links a.active {
+            color: #4a6cf7;
+            font-weight: 600;
+        }
+
         /* ---------- 博客头部 ---------- */
         .blog-header {
             text-align: center;
-            padding: 50px 0 40px;
+            padding: 20px 0 20px;
+            flex-shrink: 0;
         }
 
         .blog-header h1 {
-            font-size: 38px;
+            font-size: 34px;
             color: #1a1a2e;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             font-weight: 700;
         }
 
         .blog-header p {
             color: #888;
-            font-size: 18px;
+            font-size: 16px;
             letter-spacing: 0.5px;
         }
 
-        /* ---------- 主体：两栏布局 ---------- */
+        /* ---------- 主体 ---------- */
         .main-content {
             display: flex;
-            gap: 48px;
+            gap: 40px;
             margin-top: 10px;
-            flex-wrap: wrap;
+            flex: 1;
+            min-height: 400px;
         }
 
         .posts {
             flex: 2;
             min-width: 280px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .sidebar {
+        /* 文章列表头部 */
+        .posts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .posts-header h2 {
+            font-size: 20px;
+            color: #1a1a2e;
+        }
+
+        .add-btn {
+            background: #4a6cf7;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(74, 108, 247, 0.3);
+        }
+
+        .add-btn:hover {
+            background: #3b5de7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 文章列表 */
+        .posts-list {
             flex: 1;
-            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            max-height: 600px;
+            padding-right: 6px;
         }
 
-        /* ---------- 空状态：暂无文章 ---------- */
+        .posts-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .posts-list::-webkit-scrollbar-thumb {
+            background: #d0d5e0;
+            border-radius: 10px;
+        }
+
+        /* ---------- 文章卡片 ---------- */
+        .post-item {
+            padding: 18px 22px;
+            background: #fafbff;
+            border-radius: 20px;
+            border: 1px solid #f0f2f8;
+            transition: all 0.25s;
+            animation: fadeInUp 0.4s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .post-item:hover {
+            background: #f5f7ff;
+            border-color: #dde1f0;
+            transform: translateX(4px);
+        }
+
+        .post-item h3 {
+            font-size: 19px;
+            margin-bottom: 4px;
+            padding-right: 40px;
+        }
+
+        .post-item h3 a {
+            text-decoration: none;
+            color: #1a1a2e;
+            transition: color 0.2s;
+        }
+
+        .post-item h3 a:hover {
+            color: #4a6cf7;
+        }
+
+        .post-meta {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        .post-meta span {
+            margin-right: 16px;
+        }
+
+        .post-excerpt {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .read-more {
+            display: inline-block;
+            color: #4a6cf7;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 18px;
+            cursor: pointer;
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            transition: color 0.2s;
+            line-height: 1;
+            padding: 0 4px;
+        }
+
+        .delete-btn:hover {
+            color: #e74c3c;
+        }
+
+        /* ---------- 空状态 ---------- */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             background: #fafbff;
             border-radius: 32px;
             border: 2px dashed #e0e4ed;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .empty-state .empty-icon {
@@ -134,11 +304,23 @@
         }
 
         /* ---------- 侧边栏 ---------- */
+        .sidebar {
+            flex: 1;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
         .sidebar-widget {
             background: #fafbff;
             border-radius: 24px;
             padding: 22px 26px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-widget:last-child {
+            margin-bottom: 0;
         }
 
         .sidebar-widget h3 {
@@ -191,12 +373,13 @@
 
         /* ---------- 页脚 ---------- */
         .footer {
-            margin-top: 40px;
-            padding-top: 28px;
+            margin-top: 20px;
+            padding-top: 18px;
             border-top: 1px solid #f0f2f5;
             text-align: center;
             color: #aaa;
             font-size: 14px;
+            flex-shrink: 0;
         }
 
         .footer a {
@@ -204,32 +387,393 @@
             text-decoration: none;
         }
 
-        /* 响应式优化 */
-        @media (max-width: 700px) {
+        /* ---------- 模态框（编辑器） ---------- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 32px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            padding: 36px 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: #1a1a2e;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e8ecf3;
+            border-radius: 16px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fafbff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a6cf7;
+            background: #fff;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .form-hint code {
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .form-actions button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-cancel {
+            background: #f0f2f5;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e4e7ef;
+        }
+
+        .btn-submit {
+            background: #4a6cf7;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(74, 108, 247, 0.3);
+        }
+
+        .btn-submit:hover {
+            background: #3b5de7;
+            transform: translateY(-2px);
+        }
+
+        /* ---------- 文章详情弹窗 ---------- */
+        .detail-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .detail-overlay.active {
+            display: flex;
+        }
+
+        .detail-modal {
+            background: #fff;
+            border-radius: 32px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            padding: 40px 48px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .detail-modal .modal-header {
+            margin-bottom: 16px;
+        }
+
+        .detail-modal .modal-header h2 {
+            font-size: 28px;
+            color: #1a1a2e;
+        }
+
+        .detail-meta {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .detail-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        /* Markdown 样式 */
+        .detail-content h1,
+        .detail-content h2,
+        .detail-content h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #1a1a2e;
+        }
+
+        .detail-content h1 {
+            font-size: 28px;
+        }
+        .detail-content h2 {
+            font-size: 24px;
+        }
+        .detail-content h3 {
+            font-size: 20px;
+        }
+
+        .detail-content p {
+            margin-bottom: 12px;
+        }
+
+        .detail-content ul,
+        .detail-content ol {
+            margin-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .detail-content blockquote {
+            border-left: 4px solid #4a6cf7;
+            padding-left: 16px;
+            margin-left: 0;
+            color: #666;
+            background: #f8faff;
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+
+        .detail-content code {
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .detail-content pre {
+            background: #1a1a2e;
+            color: #e8e8e8;
+            padding: 16px 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        .detail-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .detail-content img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 12px 0;
+        }
+
+        .detail-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .detail-content table th,
+        .detail-content table td {
+            border: 1px solid #e8ecf3;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .detail-content table th {
+            background: #f8faff;
+        }
+
+        /* ---------- 动画 ---------- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ---------- 响应式 ---------- */
+        @media (max-width: 900px) {
+            .container {
+                padding: 24px 24px;
+                border-radius: 32px;
+                min-height: 96vh;
+            }
+            .main-content {
+                flex-direction: column;
+            }
+            .posts-list {
+                max-height: 400px;
+            }
+            .modal {
+                padding: 24px 20px;
+            }
+            .detail-modal {
+                padding: 24px 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
             body {
-                padding: 16px;
+                padding: 12px;
             }
             .container {
-                padding: 24px 20px;
-                border-radius: 32px;
+                padding: 16px 14px;
+                border-radius: 24px;
             }
             .navbar {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 14px;
+                gap: 12px;
             }
             .nav-links {
-                gap: 22px;
+                gap: 18px;
                 flex-wrap: wrap;
             }
             .blog-header h1 {
-                font-size: 28px;
+                font-size: 24px;
             }
-            .blog-header {
-                padding: 30px 0 24px;
+            .posts-header {
+                flex-direction: column;
+                align-items: stretch;
             }
-            .empty-state {
-                padding: 40px 16px;
+            .add-btn {
+                justify-content: center;
+            }
+            .post-item {
+                padding: 14px 16px;
+            }
+            .post-item h3 {
+                font-size: 16px;
+                padding-right: 30px;
+            }
+            .modal {
+                padding: 20px 16px;
+            }
+            .detail-modal {
+                padding: 20px 16px;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .form-actions button {
+                width: 100%;
             }
         }
     </style>
@@ -243,9 +787,8 @@
                 <a href="#">zengzhixuan's blog</a>
             </div>
             <ul class="nav-links">
-                <li><a href="#">首页</a></li>
-                <li><a href="#">归档</a></li>
-                <li><a href="#">关于</a></li>
+                <li><a class="active" onclick="showList()">📖 文章</a></li>
+                <li><a onclick="openEditor()">✏️ 写文章</a></li>
             </ul>
         </nav>
 
@@ -258,20 +801,22 @@
         <!-- ========== 主体内容 ========== -->
         <div class="main-content">
 
-            <!-- 左侧：文章列表（目前为空） -->
+            <!-- 左侧：文章列表 -->
             <section class="posts">
-                <!-- 空状态提示 -->
-                <div class="empty-state">
-                    <span class="empty-icon">📂</span>
-                    <h2>还没有文章</h2>
-                    <p>第一篇博客正在路上，敬请期待……</p>
+                <div class="posts-header">
+                    <h2>📖 最新文章</h2>
+                    <button class="add-btn" onclick="openEditor()">
+                        <span>＋</span> 写文章
+                    </button>
+                </div>
+
+                <div class="posts-list" id="postsList">
+                    <!-- 默认有一篇示例文章 -->
                 </div>
             </section>
 
             <!-- 右侧：侧边栏 -->
             <aside class="sidebar">
-
-                <!-- 关于我 -->
                 <div class="sidebar-widget">
                     <h3>👤 关于我</h3>
                     <p style="font-size: 14px; color: #4a5568;">
@@ -279,37 +824,327 @@
                     </p>
                 </div>
 
-                <!-- 近期文章 -->
                 <div class="sidebar-widget">
-                    <h3>📖 近期文章</h3>
+                    <h3>📊 博客统计</h3>
                     <ul>
-                        <li><a href="#">暂无文章</a></li>
+                        <li id="postCount">📄 文章总数：0 篇</li>
+                        <li id="tagCount">🏷️ 标签：0 个</li>
                     </ul>
                 </div>
 
-                <!-- 标签云 -->
                 <div class="sidebar-widget">
                     <h3>🏷️ 标签云</h3>
-                    <div class="tag-cloud">
-                        <a href="#">技术</a>
-                        <a href="#">前端</a>
-                        <a href="#">成长</a>
-                        <a href="#">生活</a>
-                        <a href="#">Python</a>
-                        <a href="#">Git</a>
-                        <a href="#">写作</a>
+                    <div class="tag-cloud" id="tagCloud">
+                        <span style="color: #999; font-size: 13px;">暂无标签</span>
                     </div>
                 </div>
-
             </aside>
 
         </div>
 
         <!-- ========== 页脚 ========== -->
         <footer class="footer">
-            <p>© 2026 zengzhixuan's Blog · 由 <a href="#">GitHub Pages</a> 驱动</p>
+            <p>© 2026 zengzhixuan's Blog · 由 <a href="#">GitHub Pages</a> 驱动 · 支持 Markdown &amp; LaTeX</p>
         </footer>
 
     </div>
+
+    <!-- ========== 编辑器模态框 ========== -->
+    <div class="modal-overlay" id="editorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>✏️ 写新文章</h2>
+                <button class="modal-close" onclick="closeEditor()">&times;</button>
+            </div>
+            <form id="articleForm" onsubmit="submitArticle(event)">
+                <div class="form-group">
+                    <label for="articleTitle">标题 *</label>
+                    <input type="text" id="articleTitle" placeholder="输入文章标题..." required>
+                </div>
+                <div class="form-group">
+                    <label for="articleTag">标签</label>
+                    <input type="text" id="articleTag" placeholder="例如：技术、前端、Python">
+                </div>
+                <div class="form-group">
+                    <label for="articleContent">内容 (支持 Markdown + LaTeX) *</label>
+                    <textarea id="articleContent" placeholder="用 Markdown 写文章吧！支持 **粗体**、*斜体*、`代码`、$$ LaTeX $$ 等" required></textarea>
+                    <div class="form-hint">
+                        💡 支持 <code>**粗体**</code> <code>*斜体*</code> <code>`代码`</code> <code>$$ 数学公式 $$</code> <code># 标题</code> <code>- 列表</code>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditor()">取消</button>
+                    <button type="submit" class="btn-submit">发布文章</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== 文章详情模态框 ========== -->
+    <div class="detail-overlay" id="detailModal">
+        <div class="detail-modal">
+            <div class="modal-header">
+                <h2 id="detailTitle">文章标题</h2>
+                <button class="modal-close" onclick="closeDetail()">&times;</button>
+            </div>
+            <div class="detail-meta" id="detailMeta">
+                <span id="detailDate">📅 2026-06-24</span>
+                <span id="detailTag" style="margin-left: 16px;">🏷️ 技术</span>
+            </div>
+            <div class="detail-content" id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- ========== JavaScript ========== -->
+    <script>
+        // ===== 文章数据存储 =====
+        let articles = [];
+        let articleIdCounter = 0;
+
+        // ===== 初始化默认文章 =====
+        const defaultArticle = {
+            id: articleIdCounter++,
+            title: '欢迎来到我的博客！',
+            tag: '随笔',
+            date: '2026-06-24',
+            content: `## 你好，世界！ 👋
+
+        欢迎来到 **zengzhixuan's blog**！
+
+        这个博客支持 **Markdown** 和 **LaTeX** 语法，你可以自由地写作。
+
+        ### Markdown 示例
+
+        - **粗体** 和 *斜体*
+        - \`行内代码\`
+        - 列表和引用
+
+        > 这是引用块
+
+        \`\`\`javascript
+        console.log('Hello, World!');
+        \`\`\`
+
+        ### LaTeX 示例
+
+        行内公式：$E = mc^2$
+
+        块级公式：
+
+        $$
+        \\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+        $$
+
+        矩阵：
+
+        $$
+        \\begin{pmatrix}
+        1 & 2 \\\\
+        3 & 4
+        \\end{pmatrix}
+        $$
+
+        尽情享受写作的乐趣吧！ 🚀`
+        };
+
+        articles.push(defaultArticle);
+
+        // ===== 渲染文章列表 =====
+        function renderPosts() {
+            const list = document.getElementById('postsList');
+            if (articles.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">📂</span>
+                        <h2>还没有文章</h2>
+                        <p>点击「写文章」按钮创建第一篇博客吧！</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = articles.map(article => `
+                    <article class="post-item" data-id="${article.id}" onclick="openDetail(${article.id})">
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteArticle(${article.id})" title="删除文章">✕</button>
+                        <h3><a>${escapeHtml(article.title)}</a></h3>
+                        <div class="post-meta">
+                            <span>📅 ${article.date}</span>
+                            <span>🏷️ ${escapeHtml(article.tag || '未分类')}</span>
+                        </div>
+                        <p class="post-excerpt">${getExcerpt(article.content)}</p>
+                        <span class="read-more">阅读全文 →</span>
+                    </article>
+                `).join('');
+            }
+            updateStats();
+        }
+
+        // ===== 获取摘要 =====
+        function getExcerpt(content) {
+            const plain = content.replace(/[#*`$\\]/g, '').replace(/\n/g, ' ').trim();
+            return plain.length > 120 ? plain.slice(0, 120) + '……' : plain;
+        }
+
+        // ===== 转义 HTML =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 更新统计 =====
+        function updateStats() {
+            const count = articles.length;
+            document.getElementById('postCount').textContent = `📄 文章总数：${count} 篇`;
+
+            // 统计标签
+            const tagSet = new Set();
+            articles.forEach(a => { if (a.tag) tagSet.add(a.tag); });
+            document.getElementById('tagCount').textContent = `🏷️ 标签：${tagSet.size} 个`;
+
+            // 更新标签云
+            const cloud = document.getElementById('tagCloud');
+            if (tagSet.size === 0) {
+                cloud.innerHTML = '<span style="color: #999; font-size: 13px;">暂无标签</span>';
+            } else {
+                cloud.innerHTML = Array.from(tagSet).map(tag =>
+                    `<a href="#">${escapeHtml(tag)}</a>`
+                ).join('');
+            }
+        }
+
+        // ===== 打开编辑器 =====
+        function openEditor() {
+            document.getElementById('editorModal').classList.add('active');
+            document.getElementById('articleTitle').value = '';
+            document.getElementById('articleTag').value = '';
+            document.getElementById('articleContent').value = '';
+            document.getElementById('articleTitle').focus();
+            document.getElementById('articleForm').onsubmit = submitArticle;
+            // 移除编辑模式标记
+            document.getElementById('articleForm').dataset.editId = '';
+        }
+
+        // ===== 关闭编辑器 =====
+        function closeEditor() {
+            document.getElementById('editorModal').classList.remove('active');
+        }
+
+        // ===== 提交文章 =====
+        function submitArticle(e) {
+            e.preventDefault();
+            const title = document.getElementById('articleTitle').value.trim();
+            const tag = document.getElementById('articleTag').value.trim();
+            const content = document.getElementById('articleContent').value.trim();
+
+            if (!title || !content) {
+                alert('标题和内容不能为空！');
+                return;
+            }
+
+            const editId = document.getElementById('articleForm').dataset.editId;
+            if (editId) {
+                // 编辑模式
+                const idx = articles.findIndex(a => a.id === parseInt(editId));
+                if (idx !== -1) {
+                    articles[idx].title = title;
+                    articles[idx].tag = tag;
+                    articles[idx].content = content;
+                }
+            } else {
+                // 新增模式
+                const now = new Date();
+                const date = now.toISOString().split('T')[0];
+                articles.unshift({
+                    id: articleIdCounter++,
+                    title: title,
+                    tag: tag,
+                    date: date,
+                    content: content
+                });
+            }
+
+            closeEditor();
+            renderPosts();
+        }
+
+        // ===== 删除文章 =====
+        function deleteArticle(id) {
+            if (!confirm('确定要删除这篇文章吗？')) return;
+            articles = articles.filter(a => a.id !== id);
+            renderPosts();
+        }
+
+        // ===== 打开文章详情 =====
+        function openDetail(id) {
+            const article = articles.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('detailTitle').textContent = article.title;
+            document.getElementById('detailDate').textContent = `📅 ${article.date}`;
+            document.getElementById('detailTag').textContent = `🏷️ ${article.tag || '未分类'}`;
+
+            const content = document.getElementById('detailContent');
+            // 使用 marked 渲染 Markdown
+            let html = marked.parse(article.content);
+
+            // 渲染 LaTeX
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            // 处理块级公式 $$ ... $$
+            tempDiv.innerHTML = tempDiv.innerHTML.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+                try {
+                    return katex.renderToString(latex, { displayMode: true, throwOnError: false });
+                } catch (e) {
+                    return match;
+                }
+            });
+            // 处理行内公式 $ ... $
+            tempDiv.innerHTML = tempDiv.innerHTML.replace(/\$([^\$]+?)\$/g, (match, latex) => {
+                try {
+                    return katex.renderToString(latex, { displayMode: false, throwOnError: false });
+                } catch (e) {
+                    return match;
+                }
+            });
+
+            content.innerHTML = tempDiv.innerHTML;
+
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        // ===== 关闭文章详情 =====
+        function closeDetail() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // ===== 显示列表（导航用） =====
+        function showList() {
+            // 滚动到列表位置
+            document.querySelector('.posts').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== 点击模态框外部关闭 =====
+        document.getElementById('editorModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditor();
+        });
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetail();
+        });
+
+        // ===== 键盘快捷键 =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditor();
+                closeDetail();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                openEditor();
+            }
+        });
+
+        // ===== 初始化 =====
+        renderPosts();
+        console.log('📝 博客已加载！按 Ctrl+K 快速写文章。');
+    </script>
 </body>
 </html>
