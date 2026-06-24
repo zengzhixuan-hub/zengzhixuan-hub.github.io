@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人博客</title>
-    <!-- 使用简单的内联样式，方便你直接复制使用 -->
+    <title>zengzhixuan's blog</title>
     <style>
         /* 全局重置和基础设置 */
         * {
@@ -15,21 +14,20 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f6f9;
+            background-color: #f0f2f5;
             color: #333;
             line-height: 1.6;
-            padding: 20px;
+            padding: 30px;
         }
 
-        /* 整个页面的容器 */
+        /* 整个页面的容器 - 超大圆角 */
         .container {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            padding: 30px 40px;
+            background: #ffffff;
+            border-radius: 48px;  /* 更大的圆角 */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+            padding: 40px 50px;
         }
 
         /* ---------- 顶部导航 ---------- */
@@ -37,143 +35,118 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eaeef3;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f0f2f5;
             flex-wrap: wrap;
         }
 
         .logo a {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            color: #2c3e50;
+            color: #1a1a2e;
             text-decoration: none;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
 
         .logo a:hover {
-            color: #3498db;
+            color: #4a6cf7;
         }
 
         .nav-links {
             list-style: none;
             display: flex;
-            gap: 30px;
+            gap: 32px;
         }
 
         .nav-links a {
             text-decoration: none;
             color: #555;
             font-weight: 500;
-            font-size: 16px;
+            font-size: 15px;
             transition: color 0.2s;
         }
 
         .nav-links a:hover {
-            color: #3498db;
+            color: #4a6cf7;
         }
 
         /* ---------- 博客头部 ---------- */
         .blog-header {
             text-align: center;
-            padding: 40px 0 30px;
+            padding: 50px 0 40px;
         }
 
         .blog-header h1 {
-            font-size: 36px;
-            color: #1a2634;
-            margin-bottom: 8px;
+            font-size: 38px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-weight: 700;
         }
 
         .blog-header p {
-            color: #7f8c9b;
+            color: #888;
             font-size: 18px;
+            letter-spacing: 0.5px;
         }
 
         /* ---------- 主体：两栏布局 ---------- */
         .main-content {
             display: flex;
-            gap: 40px;
-            margin-top: 20px;
+            gap: 48px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
 
         .posts {
-            flex: 2; /* 文章列表占2份 */
+            flex: 2;
             min-width: 280px;
         }
 
         .sidebar {
-            flex: 1; /* 侧边栏占1份 */
+            flex: 1;
             min-width: 220px;
         }
 
-        /* ---------- 文章列表 ---------- */
-        .post-item {
-            padding: 20px 0;
-            border-bottom: 1px solid #eef2f6;
+        /* ---------- 空状态：暂无文章 ---------- */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fafbff;
+            border-radius: 32px;
+            border: 2px dashed #e0e4ed;
         }
 
-        .post-item:last-child {
-            border-bottom: none;
+        .empty-state .empty-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
         }
 
-        .post-item h2 {
+        .empty-state h2 {
             font-size: 22px;
-            margin-bottom: 6px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
         }
 
-        .post-item h2 a {
-            text-decoration: none;
-            color: #1f2a36;
-            transition: color 0.2s;
-        }
-
-        .post-item h2 a:hover {
-            color: #3498db;
-        }
-
-        .post-meta {
-            font-size: 14px;
-            color: #95a5a6;
-            margin-bottom: 10px;
-        }
-
-        .post-meta span {
-            margin-right: 15px;
-        }
-
-        .post-excerpt {
-            color: #4a5568;
+        .empty-state p {
+            color: #999;
             font-size: 15px;
-        }
-
-        .read-more {
-            display: inline-block;
-            margin-top: 8px;
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .read-more:hover {
-            text-decoration: underline;
         }
 
         /* ---------- 侧边栏 ---------- */
         .sidebar-widget {
-            background: #f8faff;
-            border-radius: 10px;
-            padding: 20px 22px;
-            margin-bottom: 30px;
+            background: #fafbff;
+            border-radius: 24px;
+            padding: 22px 26px;
+            margin-bottom: 28px;
         }
 
         .sidebar-widget h3 {
-            font-size: 18px;
-            color: #1f2a36;
+            font-size: 17px;
+            color: #1a1a2e;
             margin-bottom: 14px;
-            border-left: 4px solid #3498db;
-            padding-left: 12px;
+            padding-left: 14px;
+            border-left: 4px solid #4a6cf7;
         }
 
         .sidebar-widget ul {
@@ -187,12 +160,12 @@
 
         .sidebar-widget ul li a {
             text-decoration: none;
-            color: #3d5166;
+            color: #4a5568;
             transition: color 0.2s;
         }
 
         .sidebar-widget ul li a:hover {
-            color: #3498db;
+            color: #4a6cf7;
         }
 
         .tag-cloud {
@@ -202,51 +175,61 @@
         }
 
         .tag-cloud a {
-            background: #e9edf4;
-            padding: 4px 14px;
-            border-radius: 20px;
+            background: #eef1f8;
+            padding: 4px 16px;
+            border-radius: 30px;
             font-size: 13px;
-            color: #3d5166;
+            color: #4a5568;
             text-decoration: none;
             transition: 0.2s;
         }
 
         .tag-cloud a:hover {
-            background: #3498db;
+            background: #4a6cf7;
             color: #fff;
         }
 
         /* ---------- 页脚 ---------- */
         .footer {
             margin-top: 40px;
-            padding-top: 25px;
-            border-top: 1px solid #eaeef3;
+            padding-top: 28px;
+            border-top: 1px solid #f0f2f5;
             text-align: center;
-            color: #7f8c9b;
+            color: #aaa;
             font-size: 14px;
         }
 
         .footer a {
-            color: #3498db;
+            color: #4a6cf7;
             text-decoration: none;
         }
 
-        /* 响应式优化：小屏幕下导航折叠 */
+        /* 响应式优化 */
         @media (max-width: 700px) {
+            body {
+                padding: 16px;
+            }
             .container {
-                padding: 20px;
+                padding: 24px 20px;
+                border-radius: 32px;
             }
             .navbar {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 12px;
+                gap: 14px;
             }
             .nav-links {
-                gap: 20px;
+                gap: 22px;
                 flex-wrap: wrap;
             }
             .blog-header h1 {
                 font-size: 28px;
+            }
+            .blog-header {
+                padding: 30px 0 24px;
+            }
+            .empty-state {
+                padding: 40px 16px;
             }
         }
     </style>
@@ -268,52 +251,21 @@
 
         <!-- ========== 博客头部 ========== -->
         <header class="blog-header">
-            <h1>📝zengzhixuan's blog</h1>
+            <h1>📝 zengzhixuan's blog</h1>
             <p>记录技术、生活与思考</p>
         </header>
 
         <!-- ========== 主体内容 ========== -->
         <div class="main-content">
 
-            <!-- 左侧：文章列表 -->
+            <!-- 左侧：文章列表（目前为空） -->
             <section class="posts">
-
-                <article class="post-item">
-                    <h2><a href="#">GitHub Pages 搭建博客完整指南</a></h2>
-                    <div class="post-meta">
-                        <span>📅 2026-06-24</span>
-                        <span>🏷️ 技术</span>
-                    </div>
-                    <p class="post-excerpt">
-                        从零开始，教你如何利用 GitHub Pages 免费搭建属于自己的博客网站，包括域名绑定、主题选择等实用技巧……
-                    </p>
-                    <a href="#" class="read-more">阅读全文 →</a>
-                </article>
-
-                <article class="post-item">
-                    <h2><a href="#">2026 年流行的前端框架对比</a></h2>
-                    <div class="post-meta">
-                        <span>📅 2026-06-20</span>
-                        <span>🏷️ 前端</span>
-                    </div>
-                    <p class="post-excerpt">
-                        React、Vue 还是 Svelte？本文从性能、生态、学习曲线等角度，帮你理清思路，找到最适合你的框架……
-                    </p>
-                    <a href="#" class="read-more">阅读全文 →</a>
-                </article>
-
-                <article class="post-item">
-                    <h2><a href="#">如何保持高效学习与输出</a></h2>
-                    <div class="post-meta">
-                        <span>📅 2026-06-15</span>
-                        <span>🏷️ 成长</span>
-                    </div>
-                    <p class="post-excerpt">
-                        分享我多年积累的学习方法、笔记系统以及如何克服拖延，持续输出有价值的内容……
-                    </p>
-                    <a href="#" class="read-more">阅读全文 →</a>
-                </article>
-
+                <!-- 空状态提示 -->
+                <div class="empty-state">
+                    <span class="empty-icon">📂</span>
+                    <h2>还没有文章</h2>
+                    <p>第一篇博客正在路上，敬请期待……</p>
+                </div>
             </section>
 
             <!-- 右侧：侧边栏 -->
@@ -331,9 +283,7 @@
                 <div class="sidebar-widget">
                     <h3>📖 近期文章</h3>
                     <ul>
-                        <li><a href="#">GitHub Pages 搭建博客完整指南</a></li>
-                        <li><a href="#">2026 年流行的前端框架对比</a></li>
-                        <li><a href="#">如何保持高效学习与输出</a></li>
+                        <li><a href="#">暂无文章</a></li>
                     </ul>
                 </div>
 
@@ -357,7 +307,7 @@
 
         <!-- ========== 页脚 ========== -->
         <footer class="footer">
-            <p>© 2026 Zengzhixuan's Blog · 由 <a href="#">GitHub Pages</a> 驱动</p>
+            <p>© 2026 zengzhixuan's Blog · 由 <a href="#">GitHub Pages</a> 驱动</p>
         </footer>
 
     </div>
